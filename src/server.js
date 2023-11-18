@@ -24,7 +24,10 @@ app.use(
 
 //APP ROUTERS
 //router for user logins
-app.use("/api/user", userRouter);
+app.use("/api/users", userRouter);
+
+//registration post
+app.post("/api/users/register", userRouter);
 
 //set router of pantry staples add more if needed
 app.use("/api/foods", foodRouter);
