@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { FoodModel } from "../models/food.model.js";
+import { FoodModel, FoodSchema } from "../models/food.model.js";
 import handler from "express-async-handler";
 
 const router = Router();
@@ -18,6 +18,21 @@ router.get(
     const { category } = req.params;
     const foods = await FoodModel.find({ category: category });
     res.send(foods);
+  })
+);
+
+router.get(
+  "/search/:searchFood",
+  handler(async (req, res) => {
+    try {
+      const { searchFood } = req.params;
+      const searchregex = new RegExp(searchFood, "i");
+
+      const foods = await FoodModel.find({ name: { $regex: searchregex } });
+      res.send(foods);
+    } catch (error) {
+      res.status(500).send("error searching for item");
+    }
   })
 );
 

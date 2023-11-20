@@ -32,6 +32,7 @@ app.post("/api/users/register", userRouter);
 //set router of pantry staples add more if needed
 app.use("/api/foods", foodRouter);
 //search for food router add code from 10:04
+app.use("/api/foods/search", foodRouter);
 /*
 router.get("/search/:searchTerm"),
   (req, res) => {
