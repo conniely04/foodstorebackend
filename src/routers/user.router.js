@@ -10,6 +10,7 @@ const PASSWORD_HASH = 10;
 import validateJwt from "../middleware/auth.js";
 
 const router = Router();
+const MANAGER_REGISTRATION_PIN = "1234";
 
 //login api requests
 
@@ -66,14 +67,15 @@ router.post(
   "/register",
   handler(async (req, res) => {
     try {
-      const { firstname, lastname, email, password, address, isAdmin } =
-        req.body;
+      const { firstname, lastname, email, password, address, pin } = req.body;
       const user = await UserModel.findOne({ email: email.toLowerCase() });
+
       //checking if user already exists
       if (user) {
         res.status(BAD_REQUEST).send("User already exists, please login.");
         return;
       }
+      const isAdmin = pin === MANAGER_REGISTRATION_PIN;
       //if new user hash password
       const hashedPassword = await bcrypt.hash(password, PASSWORD_HASH);
       const newUser = {
