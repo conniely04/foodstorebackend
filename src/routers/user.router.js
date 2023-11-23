@@ -27,6 +27,7 @@ router.post(
       response.email = user.email;
       response.password = user.password;
       response.address = user.address;
+      response.isAdmin = user.isAdmin;
       res.send(response);
       return;
     }
