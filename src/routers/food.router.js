@@ -21,4 +21,23 @@ router.get(
   })
 );
 
+router.get(
+  "/:foodId",
+  handler(async (req, res) => {
+    const { foodId } = req.params;
+
+    // Find the food item by ID
+    const food = await FoodModel.findById(foodId);
+
+    if (!food) {
+      // If food item not found, return a 404 response
+      res.status(404).json({ message: "Food item not found" });
+      return;
+    }
+
+    // Food item found, send it as a JSON response
+    res.json(food);
+  })
+);
+
 export default router;
