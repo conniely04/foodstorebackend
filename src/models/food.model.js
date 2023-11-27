@@ -6,7 +6,10 @@ export const FoodSchema = new Schema(
     price: { type: Number, required: true },
     image: { type: String, required: true },
     inStock: { type: Boolean, default: false },
-    category: { type: String, required: true },
+    category: {
+      type: Schema.Types.ObjectId, // Reference to Category ID
+      ref: 'Category'
+    },
   },
   {
     toJSON: {

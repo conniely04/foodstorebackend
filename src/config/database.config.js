@@ -1,6 +1,7 @@
 import mongoose, { set } from "mongoose";
 
 import { UserModel } from "../models/user.model.js";
+import { CategoryModel } from "../models/category.model.js";
 import { FoodModel } from "../models/food.model.js";
 import { sample_users } from "../data.js";
 import bcrypt from "bcryptjs";
@@ -15,6 +16,7 @@ export const dbconnect = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI, {});
     await addUsers();
+    await addCategories();
     await addFood();
     console.log("connected successfully");
   } catch (error) {
@@ -35,6 +37,19 @@ async function addUsers() {
     await UserModel.create(user);
   }
   console.log("User is succesfully created");
+}
+
+async function addCategories() {
+  const categoryCount = await CategoryModel.countDocuments();
+  if (categoryCount > 0) {
+    console.log("Categories are already added");
+    return;
+  }
+
+  for (let category of sample_categories) {
+    await CategoryModel.create(category);
+  }
+  console.log("Categories successfully created");
 }
 
 async function addFood() {
