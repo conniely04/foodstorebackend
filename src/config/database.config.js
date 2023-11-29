@@ -3,6 +3,7 @@ import mongoose, { set } from "mongoose";
 import { UserModel } from "../models/user.model.js";
 import { CategoryModel } from "../models/category.model.js";
 import { FoodModel } from "../models/food.model.js";
+import { CartModel } from "../models/cart.model.js";
 import { sample_users } from "../data.js";
 import bcrypt from "bcryptjs";
 const PASSWORD_HASH = 10;
@@ -18,6 +19,7 @@ export const dbconnect = async () => {
     await addUsers();
     await addCategories();
     await addFood();
+    await addCart();
     console.log("connected successfully");
   } catch (error) {
     console.error("Connection error:", error);
@@ -59,4 +61,24 @@ async function addFood() {
     return;
   }
   //adding food attributes EX: images, price, etc
+}
+
+async function addCart() {
+  // Fetch all users
+  const users = await UserModel.find();
+  for (const user of users) {
+    // Check if the user already has a cart
+    const cartExists = await CartModel.findOne({ user: user });
+    if (!cartExists) {
+      // Create a new cart for this user
+      const newCart = new CartModel({
+        user: user,
+
+        foodList: [],
+        totalPrice: 0,
+      });
+      await newCart.save();
+    }
+  }
+  console.log("Carts are set up successfully");
 }

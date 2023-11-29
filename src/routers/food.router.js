@@ -1,29 +1,30 @@
 import handler from "express-async-handler";
-import express from 'express';
-import { FoodModel } from '../models/food.model.js'; // Adjust the path as needed
+import express from "express";
+import { FoodModel } from "../models/food.model.js"; // Adjust the path as needed
 
 const router = express.Router();
 // const router = Router();
 //food api specific data requests
-router.get("/", handler(async (req, res) => {
+router.get(
+  "/",
+  handler(async (req, res) => {
     const foods = await FoodModel.find({});
     res.send(foods);
   })
 );
 
-router.get('/category/:categoryId', async (req, res) => {
+router.get("/category/:categoryId", async (req, res) => {
   try {
     const categoryId = req.params.categoryId;
-    console.log("Received Category ID:", categoryId);
+
     const foods = await FoodModel.find({ category: categoryId });
-    console.log("Queried Foods:", foods);
+
     res.json(foods);
   } catch (error) {
     console.error("Error fetching foods for category:", error);
     res.status(500).json({ message: error.message });
   }
 });
-
 
 router.get(
   "/search/:searchFood",
@@ -37,6 +38,25 @@ router.get(
     } catch (error) {
       res.status(500).send("error searching for item");
     }
+  })
+);
+
+router.get(
+  "/:foodId",
+  handler(async (req, res) => {
+    const { foodId } = req.params;
+
+    // Find the food item by ID
+    const food = await FoodModel.findById(foodId);
+
+    if (!food) {
+      // If food item not found, return a 404 response
+      res.status(404).json({ message: "Food item not found" });
+      return;
+    }
+
+    // Food item found, send it as a JSON response
+    res.json(food);
   })
 );
 
