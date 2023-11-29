@@ -121,7 +121,7 @@ router.post("/addToCart", validateJwt, async (req, res) => {
     cart.totalPrice = updatedTotalPrice;
 
     //TEST
-    await cart.populate("foodList.food").execPopulate();
+
     await cart.save();
     res.json(cart);
     console.log(cart);
