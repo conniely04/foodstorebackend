@@ -1,19 +1,21 @@
 //BACKEND APIS
 import { Router } from "express";
 import jwt from "jsonwebtoken";
-
+import { OrderStatus } from "../constants/orderStatus.js";
 import { BAD_REQUEST } from "../constants/httpStatus.js";
 import handler from "express-async-handler";
 import { UserModel } from "../models/user.model.js";
 import { CartModel } from "../models/cart.model.js";
 import { FoodModel } from "../models/food.model.js";
+import { OrderModel } from "../models/order.model.js";
 import bcrypt from "bcryptjs";
 const PASSWORD_HASH = 10;
 import validateJwt from "../middleware/auth.js";
-
+import mongoose from "mongoose";
 const router = Router();
 const MANAGER_REGISTRATION_PIN = "1234";
 
+const ObjectId = mongoose.Types.ObjectId;
 //login api requests
 
 router.post(
@@ -123,6 +125,9 @@ router.post("/addToCart", validateJwt, async (req, res) => {
     //TEST
 
     await cart.save();
+
+    cart = await CartModel.findOne({ user: userId }).populate("foodList.food");
+
     res.json(cart);
     console.log(cart);
   } catch (error) {
@@ -139,49 +144,47 @@ router.delete(
   async (req, res) => {
     const userId = req.auth.id; // Extract user ID from JWT
     const { foodId, quantity } = req.params;
-    console.log("request results:", req.params);
-
-    let newTotalPrice = 0;
-    let itemRemoved = false;
 
     try {
       // Find the user's cart
       let cart = await CartModel.findOne({ user: userId });
-
       if (!cart) {
-        // If no cart exists, send a response indicating that the item was not found
         return res.status(404).json({ message: "Cart not found" });
       }
 
       // Find the index of the item to be removed in the foodList
-      const itemIndex = cart.foodList.findIndex((item) =>
-        item.food.equals(foodId)
+      const itemIndex = cart.foodList.findIndex(
+        (item) => item.food._id.toString() === foodId
       );
 
       if (itemIndex === -1) {
-        // If the item is not found in the cart, send a response indicating that the item was not found
         return res.status(404).json({ message: "Item not found in cart" });
       }
 
       // Remove the item from the foodList
-      if (cart.foodList[itemIndex].quantity > quantity) {
-        cart.foodList[itemIndex].quantity -= quantity;
+      if (cart.foodList[itemIndex].quantity > parseInt(quantity)) {
+        cart.foodList[itemIndex].quantity -= parseInt(quantity);
       } else {
         cart.foodList.splice(itemIndex, 1);
       }
 
-      // Calculate and update the totalPrice based on the remaining items
+      // Recalculate the totalPrice
       let newTotalPrice = 0;
       for (const item of cart.foodList) {
         const foodItem = await FoodModel.findById(item.food);
         newTotalPrice += foodItem.price * item.quantity;
       }
-
       cart.totalPrice = newTotalPrice;
+
       // Save the updated cart
       await cart.save();
 
-      // Send a response indicating that the item has been successfully removed
+      // Repopulate the food objects before sending the response
+      cart = await CartModel.findOne({ user: userId }).populate(
+        "foodList.food"
+      );
+
+      // Send the response
       res.json({ message: "Item removed from cart", cart });
     } catch (error) {
       console.error("Error removing item from cart:", error);
@@ -237,6 +240,37 @@ router.post(
     }
   })
 );
+
+router.post("/createorder", validateJwt, async (req, res) => {
+  try {
+    // Extract order data from request body
+    const { user, name, address, paymentId, totalPrice, items } = req.body;
+    console.log("BACKEND ORDER DATA: ", req.body);
+
+    // Additional data validation can be done here
+    const userObjectId = new mongoose.Types.ObjectId(user);
+
+    // Create a new order in the database
+    const newOrder = await OrderModel.create({
+      // Assuming this is the user's ID
+      name,
+      address,
+      paymentId,
+      totalPrice,
+      items,
+      user: userObjectId,
+      // Ensure the items structure matches what OrderModel expects
+      // You can add more fields as per your OrderModel schema
+    });
+
+    // Send back the created order as a response
+    res.status(201).json(newOrder);
+    console.log("ORDER MADE: ", newOrder);
+  } catch (error) {
+    console.error("Error creating order:", error);
+    res.status(500).json({ message: "Error creating order" });
+  }
+});
 
 //communication between front and backend for login/user details
 const generateTokenResponse = (user) => {

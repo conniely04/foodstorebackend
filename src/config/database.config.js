@@ -4,6 +4,7 @@ import { UserModel } from "../models/user.model.js";
 import { CategoryModel } from "../models/category.model.js";
 import { FoodModel } from "../models/food.model.js";
 import { CartModel } from "../models/cart.model.js";
+import { OrderModel } from "../models/order.model.js";
 import { sample_users } from "../data.js";
 import bcrypt from "bcryptjs";
 const PASSWORD_HASH = 10;
@@ -20,6 +21,7 @@ export const dbconnect = async () => {
     await addCategories();
     await addFood();
     await addCart();
+    await addOrder();
     console.log("connected successfully");
   } catch (error) {
     console.error("Connection error:", error);
@@ -52,6 +54,26 @@ async function addCategories() {
     await CategoryModel.create(category);
   }
   console.log("Categories successfully created");
+}
+
+async function addOrder(orderData) {
+  const users = await UserModel.find();
+  for (const user of users) {
+    const orderExists = await OrderModel.findOne({ user: user._id });
+    if (!orderExists) {
+      const newOrder = new OrderModel({
+        user: user._id,
+        // Initialize with default values or gather these details from somewhere
+        name: "Default Name",
+        address: "Default Address",
+        paymentId: "DefaultPaymentId",
+        totalPrice: 0,
+        items: [],
+      });
+      await newOrder.save();
+    }
+  }
+  console.log("Orders are set up successfully");
 }
 
 async function addFood() {
