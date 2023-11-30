@@ -1,19 +1,21 @@
 //BACKEND APIS
 import { Router } from "express";
 import jwt from "jsonwebtoken";
-
+import { OrderStatus } from "../constants/orderStatus.js";
 import { BAD_REQUEST } from "../constants/httpStatus.js";
 import handler from "express-async-handler";
 import { UserModel } from "../models/user.model.js";
 import { CartModel } from "../models/cart.model.js";
 import { FoodModel } from "../models/food.model.js";
+import { OrderModel } from "../models/order.model.js";
 import bcrypt from "bcryptjs";
 const PASSWORD_HASH = 10;
 import validateJwt from "../middleware/auth.js";
-
+import mongoose from "mongoose";
 const router = Router();
 const MANAGER_REGISTRATION_PIN = "1234";
 
+const ObjectId = mongoose.Types.ObjectId;
 //login api requests
 
 router.post(
@@ -151,8 +153,8 @@ router.delete(
       }
 
       // Find the index of the item to be removed in the foodList
-      const itemIndex = cart.foodList.findIndex((item) =>
-          item.food._id.toString() === foodId
+      const itemIndex = cart.foodList.findIndex(
+        (item) => item.food._id.toString() === foodId
       );
 
       if (itemIndex === -1) {
@@ -175,10 +177,12 @@ router.delete(
       cart.totalPrice = newTotalPrice;
 
       // Save the updated cart
-      await cart.save(); 
+      await cart.save();
 
       // Repopulate the food objects before sending the response
-      cart = await CartModel.findOne({ user: userId }).populate('foodList.food');
+      cart = await CartModel.findOne({ user: userId }).populate(
+        "foodList.food"
+      );
 
       // Send the response
       res.json({ message: "Item removed from cart", cart });
@@ -188,8 +192,6 @@ router.delete(
     }
   }
 );
-
-
 
 //post to create user
 router.post(
@@ -238,6 +240,37 @@ router.post(
     }
   })
 );
+
+router.post("/createorder", validateJwt, async (req, res) => {
+  try {
+    // Extract order data from request body
+    const { user, name, address, paymentId, totalPrice, items } = req.body;
+    console.log("BACKEND ORDER DATA: ", req.body);
+
+    // Additional data validation can be done here
+    const userObjectId = new mongoose.Types.ObjectId(user);
+
+    // Create a new order in the database
+    const newOrder = await OrderModel.create({
+      // Assuming this is the user's ID
+      name,
+      address,
+      paymentId,
+      totalPrice,
+      items,
+      user: userObjectId,
+      // Ensure the items structure matches what OrderModel expects
+      // You can add more fields as per your OrderModel schema
+    });
+
+    // Send back the created order as a response
+    res.status(201).json(newOrder);
+    console.log("ORDER MADE: ", newOrder);
+  } catch (error) {
+    console.error("Error creating order:", error);
+    res.status(500).json({ message: "Error creating order" });
+  }
+});
 
 //communication between front and backend for login/user details
 const generateTokenResponse = (user) => {
