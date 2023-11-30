@@ -66,7 +66,13 @@ async function addOrder(orderData) {
         // Initialize with default values or gather these details from somewhere
         name: "Default Name",
         address: "Default Address",
-        paymentId: "DefaultPaymentId",
+        paymentId: 1111111111111111,
+        city: "DefaultCity",
+        country: "DefaultCountry",
+        zip: 11111,
+        cardname: "DefaultCardName",
+        cvv: 111,
+        phone: "DefaultNumber",
         totalPrice: 0,
         items: [],
       });

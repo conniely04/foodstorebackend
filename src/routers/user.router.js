@@ -242,9 +242,24 @@ router.post(
 );
 
 router.post("/createorder", validateJwt, async (req, res) => {
+  console.log("Route hit");
+  console.log("Body: ", req.body);
   try {
     // Extract order data from request body
-    const { user, name, address, paymentId, totalPrice, items } = req.body;
+    const {
+      user,
+      name,
+      address,
+      paymentId,
+      cvv,
+      phone,
+      city,
+      country,
+      zip,
+      cardname,
+      totalPrice,
+      items,
+    } = req.body;
     console.log("BACKEND ORDER DATA: ", req.body);
 
     // Additional data validation can be done here
@@ -256,6 +271,12 @@ router.post("/createorder", validateJwt, async (req, res) => {
       name,
       address,
       paymentId,
+      cvv,
+      phone,
+      city,
+      country,
+      zip,
+      cardname,
       totalPrice,
       items,
       user: userObjectId,
@@ -264,11 +285,52 @@ router.post("/createorder", validateJwt, async (req, res) => {
     });
 
     // Send back the created order as a response
-    res.status(201).json(newOrder);
-    console.log("ORDER MADE: ", newOrder);
+
+    console.log("NEW BACKEND ORDER MADE: ", newOrder);
   } catch (error) {
     console.error("Error creating order:", error);
     res.status(500).json({ message: "Error creating order" });
+  }
+});
+
+//CLEAR CART ENDPOINT
+router.post("/clearCart", validateJwt, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    await UserModel.findByIdAndUpdate(
+      userId,
+      { $set: { "cart.foodList": [], "cart.totalPrice": 0 } },
+      { new: true }
+    );
+    res.status(200).json({ message: "Cart cleared successfully" });
+  } catch (error) {
+    console.error("Error clearing cart:", error);
+    res.status(500).json({ message: "Error clearing cart" });
+  }
+});
+
+router.put("/updatecart", validateJwt, async (req, res) => {
+  try {
+    const userId = req.user.id; // Extract user ID from JWT
+    const updatedCart = req.body; // The updated cart data from the frontend
+
+    // Update the user's cart in the database
+    const user = await UserModel.findByIdAndUpdate(
+      userId,
+      { $set: { cart: updatedCart } },
+      { new: true } // Return the updated user document
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res
+      .status(200)
+      .json({ message: "Cart updated successfully", cart: user.cart });
+  } catch (error) {
+    console.error("Error updating cart:", error);
+    res.status(500).json({ message: "Error updating cart" });
   }
 });
 

@@ -14,9 +14,15 @@ const orderSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     address: { type: String, required: true },
+    city: { type: String, required: true },
+    country: { type: String, required: true },
+    zip: { type: Number, required: true },
+    cardname: { type: String, required: true },
 
-    paymentId: { type: String, required: true },
+    paymentId: { type: Number, required: true },
+    cvv: { type: Number, required: true },
     totalPrice: { type: Number, required: true },
+    phone: { type: String, required: true },
     items: [OrderItemSchema],
     status: { type: String, default: OrderStatus.NEW },
     user: {
