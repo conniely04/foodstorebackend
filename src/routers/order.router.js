@@ -11,6 +11,14 @@ import { UserModel } from "../models/user.model.js";
 const router = Router();
 router.use(validateJwt);
 
+router.get(
+  "/",validateJwt,
+  handler(async (req, res) => {
+    const orders = await OrderModel.find({});
+    res.send(orders);
+  })
+);
+
 router.post(
   "/create",
   handler(async (req, res) => {
