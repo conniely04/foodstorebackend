@@ -7,8 +7,8 @@ export const FoodSchema = new Schema(
     image: { type: String, required: true },
     inStock: { type: Boolean, default: false },
     category: {
-      type: Schema.Types.ObjectId, // Reference to Category ID
-      ref: 'Category'
+      type: Schema.Types.ObjectId,
+      ref: "Category",
     },
   },
   {

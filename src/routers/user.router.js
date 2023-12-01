@@ -27,13 +27,13 @@ router.post(
     if (user && (await bcrypt.compare(password, user.password))) {
       const tokenResponse = generateTokenResponse(user);
       const userResponse = {
-        id: user._id, // Make sure to send the user's ID
+        id: user._id,
         firstname: user.firstname,
         lastname: user.lastname,
         email: user.email,
         address: user.address,
-        isAdmin: user.isAdmin, // Include isAdmin if required
-        token: tokenResponse.token, // Include the token
+        isAdmin: user.isAdmin,
+        token: tokenResponse.token,
       };
 
       let cart = await CartModel.findOne({ user: user });
@@ -61,7 +61,6 @@ router.post(
 
 //validate user to check if they are logged in or not
 router.get("/validateToken", validateJwt, (req, res) => {
-  // If the token is valid, expressJwt will attach the decoded token to req.auth
   if (req.auth && req.auth.id) {
     res.json({ isValid: true });
   } else {
@@ -116,7 +115,6 @@ router.post("/addToCart", validateJwt, async (req, res) => {
 
     // Calculate and update the totalPrice based on the quantity and food prices
     const updatedTotalPrice = cart.foodList.reduce((total, item) => {
-      // Use the 'price' argument from the request body
       const foodPrice = price;
       return total + foodPrice * item.quantity;
     }, 0);
@@ -142,7 +140,7 @@ router.delete(
   "/removeitem/:foodId/:quantity",
   validateJwt,
   async (req, res) => {
-    const userId = req.auth.id; // Extract user ID from JWT
+    const userId = req.auth.id;
     const { foodId, quantity } = req.params;
 
     try {
@@ -179,7 +177,6 @@ router.delete(
       // Save the updated cart
       await cart.save();
 
-      // Repopulate the food objects before sending the response
       cart = await CartModel.findOne({ user: userId }).populate(
         "foodList.food"
       );
@@ -207,7 +204,6 @@ router.post(
         return;
       }
 
-      //PUT MANAGER PIN in .ENV!!!!!!!!
       const isAdmin = pin === MANAGER_REGISTRATION_PIN;
       //if new user hash password
       const hashedPassword = await bcrypt.hash(password, PASSWORD_HASH);
@@ -225,7 +221,6 @@ router.post(
         user: createdUser,
         foodList: [],
         totalPrice: 0,
-        // Add other fields as necessary
       });
       await newCart.save();
       const combinedResponse = {
@@ -245,7 +240,6 @@ router.post("/createorder", validateJwt, async (req, res) => {
   console.log("Route hit");
   console.log("Body: ", req.body);
   try {
-    // Extract order data from request body
     const {
       user,
       name,
@@ -263,12 +257,10 @@ router.post("/createorder", validateJwt, async (req, res) => {
     } = req.body;
     console.log("BACKEND ORDER DATA: ", req.body);
 
-    // Additional data validation can be done here
     const userObjectId = new mongoose.Types.ObjectId(user);
 
     // Create a new order in the database
     const newOrder = await OrderModel.create({
-      // Assuming this is the user's ID
       name,
       address,
       email,
@@ -282,8 +274,6 @@ router.post("/createorder", validateJwt, async (req, res) => {
       totalPrice,
       items,
       user: userObjectId,
-      // Ensure the items structure matches what OrderModel expects
-      // You can add more fields as per your OrderModel schema
     });
 
     // Send back the created order as a response
@@ -313,14 +303,13 @@ router.post("/clearCart", validateJwt, async (req, res) => {
 
 router.put("/updatecart", validateJwt, async (req, res) => {
   try {
-    const userId = req.user.id; // Extract user ID from JWT
-    const updatedCart = req.body; // The updated cart data from the frontend
+    const userId = req.user.id;
+    const updatedCart = req.body;
 
-    // Update the user's cart in the database
     const user = await UserModel.findByIdAndUpdate(
       userId,
       { $set: { cart: updatedCart } },
-      { new: true } // Return the updated user document
+      { new: true }
     );
 
     if (!user) {
@@ -341,9 +330,8 @@ router.get(
   validateJwt,
   handler(async (req, res) => {
     try {
-      const userId = req.auth.id; // Extract user ID from JWT
+      const userId = req.auth.id;
 
-      // Find orders associated with the user
       const orders = await OrderModel.find({
         user: new mongoose.Types.ObjectId(userId),
       });

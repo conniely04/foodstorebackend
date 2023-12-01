@@ -4,7 +4,6 @@ import { OrderModel } from "../models/order.model.js";
 import { BAD_REQUEST } from "../constants/httpStatus.js";
 import validateJwt from "../middleware/auth.js";
 import handler from "express-async-handler";
-import isAdmin from "../middleware/isadmin.js"; // You need to create this middleware
 import { OrderStatus } from "../constants/orderStatus.js";
 import { UserModel } from "../models/user.model.js";
 
@@ -12,7 +11,8 @@ const router = Router();
 router.use(validateJwt);
 
 router.get(
-  "/",validateJwt,
+  "/",
+  validateJwt,
   handler(async (req, res) => {
     const orders = await OrderModel.find({});
     res.send(orders);

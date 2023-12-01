@@ -1,7 +1,7 @@
 import handler from "express-async-handler";
 import express from "express";
 import multer from "multer";
-import { FoodModel } from "../models/food.model.js"; // Adjust the path as needed
+import { FoodModel } from "../models/food.model.js";
 
 const router = express.Router();
 // const router = Router();
@@ -51,12 +51,10 @@ router.get(
     const food = await FoodModel.findById(foodId);
 
     if (!food) {
-      // If food item not found, return a 404 response
       res.status(404).json({ message: "Food item not found" });
       return;
     }
 
-    // Food item found, send it as a JSON response
     res.json(food);
   })
 );

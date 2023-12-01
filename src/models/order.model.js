@@ -1,7 +1,6 @@
 import { model, Schema } from "mongoose";
 import { OrderStatus } from "../constants/orderStatus.js";
-import { FoodModel } from "./food.model.js";
-import { CartModel } from "./cart.model.js";
+
 import mongoose from "mongoose";
 const ObjectId = mongoose.Types.ObjectId;
 
@@ -45,7 +44,6 @@ const orderSchema = new mongoose.Schema(
 
 orderSchema.pre("save", async function (next) {
   if (this.isModified("user") && !mongoose.Types.ObjectId.isValid(this.user)) {
-    // Convert the user ID to ObjectId only if it's a valid ObjectId string
     this.user = new mongoose.Types.ObjectId(this.user);
   }
   next();
