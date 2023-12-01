@@ -311,8 +311,6 @@ router.post("/clearCart", validateJwt, async (req, res) => {
   }
 });
 
-
-
 router.put("/updatecart", validateJwt, async (req, res) => {
   try {
     const userId = req.user.id; // Extract user ID from JWT
@@ -355,7 +353,7 @@ router.get(
           .status(404)
           .json({ message: "No orders found for this user" });
       }
-      console.log("USER ORDERS BACKEND: ", orders);
+      console.log("FETCHING ORDERS BACKEND: ", orders);
       res.json(orders);
     } catch (error) {
       console.error("Error fetching orders:", error);
