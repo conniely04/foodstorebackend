@@ -311,6 +311,8 @@ router.post("/clearCart", validateJwt, async (req, res) => {
   }
 });
 
+
+
 router.put("/updatecart", validateJwt, async (req, res) => {
   try {
     const userId = req.user.id; // Extract user ID from JWT
