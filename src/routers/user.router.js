@@ -250,6 +250,7 @@ router.post("/createorder", validateJwt, async (req, res) => {
       user,
       name,
       address,
+      email,
       paymentId,
       cvv,
       phone,
@@ -270,6 +271,7 @@ router.post("/createorder", validateJwt, async (req, res) => {
       // Assuming this is the user's ID
       name,
       address,
+      email,
       paymentId,
       cvv,
       phone,
@@ -333,6 +335,32 @@ router.put("/updatecart", validateJwt, async (req, res) => {
     res.status(500).json({ message: "Error updating cart" });
   }
 });
+//GET ORDERS
+router.get(
+  "/orders",
+  validateJwt,
+  handler(async (req, res) => {
+    try {
+      const userId = req.auth.id; // Extract user ID from JWT
+
+      // Find orders associated with the user
+      const orders = await OrderModel.find({
+        user: new mongoose.Types.ObjectId(userId),
+      });
+
+      if (!orders) {
+        return res
+          .status(404)
+          .json({ message: "No orders found for this user" });
+      }
+      console.log("USER ORDERS BACKEND: ", orders);
+      res.json(orders);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+  })
+);
 
 //communication between front and backend for login/user details
 const generateTokenResponse = (user) => {
